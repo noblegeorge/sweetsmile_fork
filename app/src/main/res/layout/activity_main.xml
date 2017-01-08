@@ -46,32 +46,16 @@
             android:hint="Enter name to search"
             android:inputType="textShortMessage" />
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/callButton"
-            android:text="Hello!"/>
+
 
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:background="@drawable/light_fade_down" />
-
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <TextView
-        android:id="@android:id/empty"
+    <Button
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/grey"
-        android:gravity="center"
-        android:text="@string/no_call_history"
-        android:textSize="20sp" />
+        android:id="@+id/callButton"
+        android:text="Hello!"/>
+
+
 
 
 

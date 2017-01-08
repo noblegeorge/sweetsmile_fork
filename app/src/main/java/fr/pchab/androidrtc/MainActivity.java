@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
@@ -55,7 +56,7 @@ import fr.pchab.androidrtc.Model.User;
 import static android.R.attr.button;
 import static android.R.attr.id;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends AppCompatActivity {
     private SharedPreferences mSharedPreferences;
     public static String userName;
     public static String userId;
@@ -84,7 +85,7 @@ public class MainActivity extends ListActivity {
         }
         this.userId = this.mSharedPreferences.getString("USER_ID", "");
         this.userName = this.mSharedPreferences.getString("USER_NAME", "");
-        this.mHistoryList = getListView();
+       // this.mHistoryList = getListView();
         this.mCallNumET = (AutoCompleteTextView) findViewById(R.id.call_num);
         this.mUsernameTV = (TextView) findViewById(R.id.main_username);
         this.mUsernameTV.setText(this.userName);
@@ -94,10 +95,10 @@ public class MainActivity extends ListActivity {
         call.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
             String id = mCallNumET.getText().toString();
-/*                String name = "";
+                String name = "";
                 try {
                     try {
-                        name = new RetrieveName().execute(id).get();
+                        name = new RetrieveStatusTask().execute(id).get();
 
                     } catch (ExecutionException e) {
                         e.printStackTrace();
@@ -105,8 +106,12 @@ public class MainActivity extends ListActivity {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-*/
-                dispatchCall(id);
+                if (name=="Online") {
+                    dispatchCall(id);
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), "Offline",Toast.LENGTH_SHORT);
+                }
 
             }});
 
@@ -693,6 +698,43 @@ public class MainActivity extends ListActivity {
             }
         });
     }
+
+
+    class RetrieveStatusTask extends AsyncTask<String, Void, String> {
+
+        private Exception exception;
+
+        @Override
+        protected String doInBackground(String... urls) {
+            String name = "";
+            String id = urls[0];
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                String host = "http://" + getResources().getString(R.string.host);
+                host += (":" + getResources().getString(R.string.port) + "/");
+                HttpGet request = new HttpGet(host + "status/" + id);
+                HttpResponse response = httpclient.execute(request);
+                String json_string = EntityUtils.toString(response.getEntity());
+                JSONObject x = new JSONObject(json_string);
+                int status = x.getInt("status");
+                if (status == 1) {
+                    name = "Online";
+                } else {
+                    name = "Offline";
+                }
+
+            } catch (Exception e) {
+                //Log.e("log_tag", "Error in http connection " + e.toString());
+            }
+            return name;
+        }
+
+        protected void onPostExecute(String feed) {
+        }
+    }
+
+
+
 
     /**
      * Add friend to your directory when you click add friend.

@@ -1,16 +1,18 @@
 package fr.pchab.androidrtc;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.PowerManager;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
@@ -20,20 +22,34 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
-public class IncomingCallActivity extends AppCompatActivity {
+public class IncomingCallActivity extends Activity {
     private String callerName;
     private TextView mCallerID;
+    private TextView cd;
     private String userName;
     private String userId;
     private Socket client;
     private String callerId;
     private Vibrator vib;
     private MediaPlayer mMediaPlayer;
+    public int secs = 0;
+    protected PowerManager.WakeLock mWakeLock;
+    countDown timer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         setContentView(R.layout.activity_incoming_call);
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+        this.mWakeLock.acquire();
 
         Bundle extras = getIntent().getExtras();
         callerId = extras.getString("CALLER_ID");
@@ -43,6 +59,7 @@ public class IncomingCallActivity extends AppCompatActivity {
 
 
         this.mCallerID = (TextView) findViewById(R.id.caller_id);
+        this.cd = (TextView) findViewById(R.id.timer);
         this.mCallerID.setText(this.callerName);
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer = MediaPlayer.create(this, R.raw.skype_call);
@@ -50,8 +67,59 @@ public class IncomingCallActivity extends AppCompatActivity {
         mMediaPlayer.setLooping(true);
         mMediaPlayer.start();
         vib= (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        long[] pattern = {0, 100, 1000};
+        long[] pattern = {0, 0, 1000};
         vib.vibrate(pattern,0);
+        timer = new countDown(22000, 1000);
+
+    }
+
+    private class countDown extends CountDownTimer {
+        public countDown(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+            start();
+        }
+
+        @Override
+        public void onFinish() {
+            secs = 0;
+            // I have an Intent you might not need one
+            vib.cancel();
+            mMediaPlayer.stop();
+            mWakeLock.release();
+            String host = "http://" + getResources().getString(R.string.host);
+            host += (":" + getResources().getString(R.string.port) + "/");
+            try {
+                client = IO.socket(host);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            client.connect();
+            try {
+                JSONObject message = new JSONObject();
+                message.put("myId", userId);
+                message.put("callerId", callerId);
+                client.emit("ejectcall", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            client.close();
+            userName = userId = null;
+            getService();
+            finish();
+        }
+
+        @Override
+        public void onTick(long duration) {
+            cd.setText(String.valueOf(secs));
+            secs = secs + 1;
+
+        }
+    }
+
+    private void getService(){
+        startService(new Intent(this, MyService.class));
+
+
     }
 
 
@@ -70,11 +138,12 @@ public class IncomingCallActivity extends AppCompatActivity {
     public void acceptCall(View view) {
         vib.cancel();
         mMediaPlayer.stop();
-        finish();
+        timer.cancel();
         Intent intent = new Intent(IncomingCallActivity.this, RtcActivity.class);
         intent.putExtra("id", this.userId);
         intent.putExtra("name",this.userName);
         intent.putExtra("callerIdChat", callerId);
+        intent.putExtra("callerName",callerName);
         String host = "http://" + getResources().getString(R.string.host);
         host += (":" + getResources().getString(R.string.port) + "/");
         try {
@@ -98,6 +167,7 @@ public class IncomingCallActivity extends AppCompatActivity {
         client.close();
         startActivity(intent);
         userName = userId = null;
+        this.mWakeLock.release();
         finish();
     }
 
@@ -109,7 +179,8 @@ public class IncomingCallActivity extends AppCompatActivity {
     public void rejectCall(View view) {
         vib.cancel();
         mMediaPlayer.stop();
-        finish();
+        timer.cancel();
+        startService(new Intent(this, MyService.class));
         String host = "http://" + getResources().getString(R.string.host);
         host += (":" + getResources().getString(R.string.port) + "/");
         try {
@@ -126,13 +197,13 @@ public class IncomingCallActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Intent intent = new Intent(IncomingCallActivity.this,MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         client.close();
-        startActivity(intent);
         userName = userId = null;
+        this.mWakeLock.release();
+
         finish();
+
+
 
 
     }

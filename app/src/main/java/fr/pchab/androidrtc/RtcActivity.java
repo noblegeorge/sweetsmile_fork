@@ -1,7 +1,7 @@
 package fr.pchab.androidrtc;
 
+import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.ListActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,35 +10,43 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
-import android.media.RingtoneManager;
-import android.opengl.GLSurfaceView;
+//import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RemoteViews;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import fr.pchab.androidrtc.Adapter.ChatAdapter;
+import fr.pchab.androidrtc.Model.ChatMessage;
+import com.github.nkzawa.socketio.client.IO;
+import com.github.nkzawa.socketio.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.MediaStream;
-import org.webrtc.RendererCommon;
-import org.webrtc.VideoRenderer;
-import org.webrtc.VideoRendererGui;
+//import org.webrtc.RendererCommon;
+//import org.webrtc.VideoRenderer;
 
-import java.util.LinkedList;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
-import fr.pchab.androidrtc.Adapter.ChatAdapter;
-import fr.pchab.androidrtc.Model.ChatMessage;
 import fr.pchab.webrtcclient.PeerConnectionParameters;
 import fr.pchab.webrtcclient.WebRtcClient;
 
-public class RtcActivity extends ListActivity implements WebRtcClient.RtcListener {
+import static android.os.SystemClock.sleep;
+
+public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
     private static final String VIDEO_CODEC_VP9 = "VP8";
     private static final String AUDIO_CODEC_OPUS = "opus";
     // Local preview screen position before call is connected.
@@ -56,10 +64,10 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
     private static final int REMOTE_Y = 0;
     private static final int REMOTE_WIDTH = 100;
     private static final int REMOTE_HEIGHT = 100;
-    private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
-    private GLSurfaceView vsv;
-    private VideoRenderer.Callbacks localRender;
-    private VideoRenderer.Callbacks remoteRender;
+ //   private RendererCommon.ScalingType scalingType = RendererCommon.ScalingType.SCALE_ASPECT_FILL;
+//    private GLSurfaceView vsv;
+   // private VideoRenderer.Callbacks localRender;
+  //  private VideoRenderer.Callbacks remoteRender;
     private static WebRtcClient client;
     private String mSocketAddress;
     private EditText mChatEditText;
@@ -69,6 +77,25 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
     private String myId;
     private String number="";
     private String callerIdChat="";
+    private String callerName="";
+    Button hang;
+    private Timer mTimer;
+
+    private Socket client2;
+    private TextView mCallDuration;
+    private TextView mCallerName;
+    private TextView mCallState;
+    private String mCallId;
+    private long mCallStart = 0;
+    private UpdateCallDurationTask mDurationTask;
+    public String status;
+
+
+    private PowerManager powerManager;
+    private PowerManager.WakeLock wakeLock;
+    private int field = 0x00000020;
+
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,15 +107,42 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
                         | LayoutParams.FLAG_DISMISS_KEYGUARD
                         | LayoutParams.FLAG_SHOW_WHEN_LOCKED
                         | LayoutParams.FLAG_TURN_SCREEN_ON);
+
+
+        try {
+            // Yeah, this is hidden field.
+            field = PowerManager.class.getClass().getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK").getInt(null);
+        } catch (Throwable ignored) {
+        }
+
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(field, getLocalClassName());
+
+
         setContentView(R.layout.main);
-        this.mChatEditText = (EditText) findViewById(R.id.chat_input);
-        this.mChatList = getListView();
-        this.mChatEditText = (EditText) findViewById(R.id.chat_input);
+//        this.mChatEditText = (EditText) findViewById(R.id.chat_input);
+//        this.mChatList = getListView();
+//        this.mChatEditText = (EditText) findViewById(R.id.chat_input);
 
         //Set list chat adapter for the list activity
-        List<ChatMessage> ll = new LinkedList<ChatMessage>();
-        mChatAdapter = new ChatAdapter(this, ll);
-        mChatList.setAdapter(mChatAdapter);
+//        List<ChatMessage> ll = new LinkedList<ChatMessage>();
+ //       mChatAdapter = new ChatAdapter(this, ll);
+//        mChatList.setAdapter(mChatAdapter);
+
+        hang = (Button) findViewById(R.id.hang_up);
+
+        mCallDuration = (TextView) findViewById(R.id.callDuration);
+        mCallerName = (TextView) findViewById(R.id.remoteUser);
+        mCallState = (TextView) findViewById(R.id.callState);
+
+        hang.setOnClickListener(new View.OnClickListener() {
+                                    public void onClick(View v) {
+                                        hangup();
+                                    }
+        });
+
+        mCallStart = System.currentTimeMillis();
+
 
         mSocketAddress = "http://" + getResources().getString(R.string.host);
         mSocketAddress += (":" + getResources().getString(R.string.port) + "/");
@@ -97,14 +151,20 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
 //        vsv = (GLSurfaceView) findViewById(R.id.glview_call);
 //        vsv.setPreserveEGLContextOnPause(true);
 //        vsv.setKeepScreenOn(true);
-
+        wakeLock.acquire();
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             myId = extras.getString("id");
             number = extras.getString("number");
             callerIdChat = extras.getString("callerIdChat");
             username = extras.getString("name");
+            callerName=extras.getString("callerName");
         }
+        mCallerName.setText(callerName);
+        mTimer = new Timer();
+        mDurationTask = new UpdateCallDurationTask();
+        mTimer.schedule(mDurationTask, 0, 500);
+
 
         init();
 
@@ -121,6 +181,23 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
 //        localRender = VideoRendererGui.create(
 //                LOCAL_X_CONNECTING, LOCAL_Y_CONNECTING,
 //                LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING, scalingType, true);
+    }
+
+
+
+
+    private void updateCallDuration() {
+        if (mCallStart > 0) {
+            mCallDuration.setText(formatTimespan(System.currentTimeMillis() - mCallStart));
+        }
+    }
+
+
+    private String formatTimespan(long timespan) {
+        long totalSeconds = timespan / 1000;
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return String.format(Locale.US, "%02d:%02d", minutes, seconds);
     }
 
     /**
@@ -178,23 +255,62 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
         mChatEditText.setText("");
     }
 
+
+    private class UpdateCallDurationTask extends TimerTask {
+
+        @Override
+        public void run() {
+            RtcActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateCallDuration();
+                }
+            });
+        }
+    }
+
     /**
      * Handle when people click hangup button
      * <p/>
      * Destroy all video resources and connection
      *
-     * @param view the view that contain the button
+    // * @param view the view that contain the button
      */
-    public void hangup(View view) {
-        if (client != null) {
-            onDestroy();
-//            try {
-//               client.removeVideo(number);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
-
+    public void hangup() {
+        if(mCallState.getText()=="CONNECTED") {
+            String host = "http://" + getResources().getString(R.string.host);
+            host += (":" + getResources().getString(R.string.port) + "/");
+            try {
+                client2 = IO.socket(host);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            client2.connect();
+            try {
+                JSONObject message = new JSONObject();
+                message.put("myId", myId);
+                message.put("callerId", number);
+                client2.emit("ejectcall", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            client2.close();
         }
+        closeActivity();
+//        if (client != null) {
+//            client.onDestroy();
+   //         onDestroy();
+  //          android.os.Process.killProcess(android.os.Process.myPid());
+
+            try {
+               client.removeVideo(number);
+                onDestroy();
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+ //       }
     }
 
     /**
@@ -268,10 +384,7 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
         @Override
         public void onReceive(Context context, Intent intent) {
             client.onDestroy();
-            android.os.Process.killProcess(android.os.Process.myPid());
-            Intent mainview =new Intent(context,MainActivity.class);
-            mainview.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(mainview);
+
         }
     }
 
@@ -281,6 +394,9 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
      * <p/>
      * Resume the video source
      */
+
+
+
     @Override
     public void onResume() {
         super.onResume();
@@ -297,15 +413,20 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
      */
     @Override
     public void onDestroy() {
-        if(client != null) {
-            client.onDestroy();
+      //  client.onDestroy();
+        if(client2!=null) {
+            client2.disconnect();
         }
-        Intent intent = new Intent(RtcActivity.this,MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        startActivity(intent);
-        finish();
-//        android.os.Process.killProcess(android.os.Process.myPid());
+        android.os.Process.killProcess(android.os.Process.myPid());
+        client.onDestroy();
+        this.finish();
+      //  super.onBackPressed();
+
+
+
+
+
+        // android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     /**
@@ -335,10 +456,9 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
      */
     @Override
     public void onReject() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        startActivity(intent);
-        finish();
+
+
+        onDestroy();
     }
 
     @Override
@@ -351,18 +471,27 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
         }
     }
 
+public void closeActivity(){
+
+    RtcActivity.this.runOnUiThread(new Runnable(){
+        @Override
+        public void run () {
+            finishActivity(0);
+        }
+    });
+}
     /**
      * This function is being when the chat event is being triggered
      * <p/>
      * Add the chat message to the chat adapter
      *
-     * @param id  the id of the user sent the chat
-     * @param msg the message
+  //   * @param id  the id of the user sent the chat
+  //   * @param msg the message
      */
-    @Override
+  //  @Override
     public void receiveMessage(final String id, final String msg) {
 
-        runOnUiThread(new Runnable() {
+    /*    runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 ChatMessage chatMsg = new ChatMessage(id, msg, System.currentTimeMillis());
@@ -384,13 +513,15 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
                             getApplicationContext(), 0, in,
                             PendingIntent.FLAG_UPDATE_CURRENT);
                     notification.flags |= Notification.FLAG_AUTO_CANCEL;
-                    notification.setLatestEventInfo(getApplicationContext(),
-                            "New message", msg,
-                            pendingNotificationIntent);
+
+//                    notification.setLatestEventInfo(getApplicationContext(),
+//                            "New message", msg,
+//                            pendingNotificationIntent);
                     mManager.notify(0, notification);
                 }
             }
-        });
+        }); */
+
     }
 
     /**
@@ -432,6 +563,7 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
      * @param callerId the id of the caler
      */
     public void answer(String callerId) throws JSONException {
+
         client.sendMessage(callerId, "init", null);
         startCam();
     }
@@ -465,9 +597,35 @@ public class RtcActivity extends ListActivity implements WebRtcClient.RtcListene
      */
     @Override
     public void onStatusChanged(final String newStatus) {
-        if(newStatus=="DISCONNECTED"){
-            onDestroy();
-        }
+
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run(){
+            //    sleep(500);
+                switch (newStatus){
+                    case "CONNECTING":
+                        mCallState.setText("CONNECTING");
+                        mCallDuration.setText(formatTimespan(System.currentTimeMillis()));
+                        break;
+                    case "CONNECTED":
+                        mCallState.setText("CONNECTED");
+                        mCallDuration.setText(formatTimespan(System.currentTimeMillis() - mCallStart));
+
+                        break;
+                    case "DISCONNECTED":
+                        mCallState.setText("DISCONNECTED");
+                        sleep(1000);
+                        onDestroy();
+                        break;
+                    default:
+                        mCallState.setText("INITIALISING");
+                        break;
+
+                }
+
+            }
+        });
     }
 
     /**

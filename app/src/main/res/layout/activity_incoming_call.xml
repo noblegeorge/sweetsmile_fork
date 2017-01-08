@@ -1,56 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="me.kevingleason.pubrtc.IncomingCallActivity"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical"
+android:weightSum="5">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
     android:orientation="vertical"
-    android:background="@color/pn_blue">
+    android:layout_weight="1"
+    android:background="#2c3e50"
+    android:paddingTop="20dp"
+    >
 
     <TextView
-        android:text="@string/incoming_call"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textSize="26sp"
-        android:textColor="@color/white"
-        android:layout_margin="25dp"/>
+        android:layout_gravity="center_horizontal"
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_pubrtc"/>
+        android:text="INCOMING CALL"
+        android:textColor="#ffffff"
+        android:textSize="16sp"
+        android:textAllCaps="true"
+        />
 
     <TextView
         android:id="@+id/caller_id"
-        android:text="@string/incoming_call_from"
+        android:text="Unknown Number"
+        android:textAllCaps="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:textSize="26sp"
-        android:textColor="@color/white"
-        android:layout_margin="25dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="14dp"
+        android:textColor="#ffffff"
+        android:textSize="28sp"/>
+
+    <TextView
+        android:id="@+id/timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="TIMER"
+        android:textColor="#ffffff"
+        android:textSize="16sp"
+        android:textAllCaps="true"
         />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="60dp">
+</LinearLayout>
 
-        <ImageButton
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@color/green"
-            android:onClick="acceptCall"
-            android:src="@drawable/ic_action_call"/>
-        <ImageButton
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:background="@color/pn_red"
-            android:layout_weight="1"
-            android:onClick="rejectCall"
-            android:src="@drawable/ic_action_end_call"/>
+<ImageView
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:src="@drawable/callbg"
+    android:padding="0dip"
+    android:layout_weight="3"
+    android:background="#2c3e50"
 
-    </LinearLayout>
+    android:contentDescription="Call background">
+
+</ImageView>
+
+<RelativeLayout
+    android:id="@+id/bottomPanel"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:background="#2c3e50"
+    android:layout_weight="1"
+    android:layout_gravity="center"
+    android:gravity="center">
+
+    <Button
+        android:id="@+id/answerButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_accept"
+        android:onClick="acceptCall"
+
+        />
+    <Button
+        android:id="@+id/declineButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_decline"
+        android:layout_toRightOf="@+id/answerButton"
+        android:onClick="rejectCall"
+        />
+
+</RelativeLayout>
 
 </LinearLayout>
+
+
+<!--
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/pn_blue"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    tools:context="com.android.dialer.IncomingCallActivity" >
+
+
+<TextView
+android:text="@string/incoming_call"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_gravity="center"
+android:textSize="26sp"
+android:textColor="@color/white"
+android:layout_margin="25dp"/>
+
+
+<TextView
+android:id="@+id/caller_id"
+android:text="@string/incoming_call_from"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_gravity="center"
+android:textSize="26sp"
+android:textColor="@color/white"
+android:layout_margin="25dp"
+    />
+
+<LinearLayout
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_marginTop="60dp"
+android:background="?android:attr/selectableItemBackground">
+
+
+
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:background="@drawable/small_green_normal"
+    android:onClick="acceptCall"
+    />
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:background="@drawable/small_red_normal"
+    android:layout_weight="1"
+    android:onClick="rejectCall"
+    />
+
+</LinearLayout>
+
+    </LinearLayout> -->

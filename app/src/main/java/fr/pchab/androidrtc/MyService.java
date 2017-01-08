@@ -16,12 +16,14 @@ import android.support.v4.app.NotificationCompat;
 
 
 import com.github.nkzawa.emitter.Emitter;
+import org.apache.http.HttpResponse;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
@@ -49,6 +51,8 @@ public class MyService extends Service {
     }
     @Override
     public void onCreate() {
+        PowerManager.WakeLock wakelock = ((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyService");
+        wakelock.acquire();
         Toast.makeText(this, "Service was Created", Toast.LENGTH_LONG).show();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (!preferences.contains("USER_ID")) {
@@ -105,6 +109,7 @@ public class MyService extends Service {
 
 
         client.connect();
+
         try {
             JSONObject message = new JSONObject();
             message.put("myId", userId);
@@ -135,25 +140,49 @@ public class MyService extends Service {
 
     @Override
     public void onDestroy() {
+        if(client!=null)client.close();
+
         Toast.makeText(this, "Service Destroyed", Toast.LENGTH_LONG).show();
         super.onDestroy();
 
+
     }
 
-    public static Thread pollingThread() {
+    public Thread pollingThread() {
+
+
 
         final Thread t = new Thread() {
             @Override
             public void run() {
+
                 try {
+                    HttpClient httpClient = new DefaultHttpClient();
+                    String host = "http://" + getResources().getString(R.string.host);
+                    host += (":" + getResources().getString(R.string.port) + "/");
+                    HttpGet request = new HttpGet(host + "status/" + userId);
+                    JSONObject message = new JSONObject();
+                    String model = Build.MODEL;
+
                     for(int i=1;i>0;i++) {
-                        JSONObject message = new JSONObject();
-                        String model = Build.MODEL;
 
+
+                        int status = (new JSONObject(EntityUtils.toString((httpClient.execute(request)).getEntity()))).getInt("status");
+                        if (status != 1) {
+
+                            message.put("myId", userId);
+
+                            client.emit("resetId", message);
+
+                        }
+
+                        /*message=null;
                         message.put("myId", model);
+                        client.emit("poll", message);*/
 
-                        client.emit("poll", message);
-                        Thread.sleep(1000);
+
+
+                        Thread.sleep(4000);
                     }
 
 
@@ -161,7 +190,7 @@ public class MyService extends Service {
 
                 }
                 finally
-                 {
+                {
 
                 }
             }
@@ -195,13 +224,46 @@ public class MyService extends Service {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            client.close();
+            if(client!=null)client.close();
 
             getApplicationContext().startActivity(intent);
 
 
         }
     };
+
+    class RetrieveStatusTask extends AsyncTask<String, Void, String> {
+
+        private Exception exception;
+
+        @Override
+        protected String doInBackground(String... urls) {
+            String name = "";
+            String id = urls[0];
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                String host = "http://" + getResources().getString(R.string.host);
+                host += (":" + getResources().getString(R.string.port) + "/");
+                HttpGet request = new HttpGet(host + "status/" + id);
+                HttpResponse response = httpclient.execute(request);
+                String json_string = EntityUtils.toString(response.getEntity());
+                JSONObject x = new JSONObject(json_string);
+                int status = x.getInt("status");
+                if (status == 1) {
+                    name = "Online";
+                } else {
+                    name = "Offline";
+                }
+
+            } catch (Exception e) {
+                //Log.e("log_tag", "Error in http connection " + e.toString());
+            }
+            return name;
+        }
+
+        protected void onPostExecute(String feed) {
+        }
+    }
 
 
 
