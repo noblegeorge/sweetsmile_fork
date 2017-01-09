@@ -1,8 +1,10 @@
 package fr.pchab.androidrtc;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -41,6 +43,8 @@ public class MyService extends Service {
     public static Socket client;
     public static String userName;
     public static String userId;
+    AlarmReceiver alarm = new AlarmReceiver();
+
 
     public MyService() {
     }
@@ -100,7 +104,7 @@ public class MyService extends Service {
         host += (":" + getResources().getString(R.string.port) + "/");
         try {
             client = IO.socket(host);
-            Toast.makeText(this, client.toString(), Toast.LENGTH_LONG).show();
+//            Toast.makeText(this, client.toString(), Toast.LENGTH_LONG).show();
 
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -112,7 +116,7 @@ public class MyService extends Service {
 
 
 
-        pollingThread();
+      // pollingThread();
 
 
     }
@@ -124,10 +128,27 @@ public class MyService extends Service {
         super.onStartCommand(intent, flags, startId);
 
 
+        AlarmManager am =( AlarmManager)getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        Intent i = new Intent(getApplicationContext(), AlarmReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
-                        client.on("receiveCall", onReceiveCall);
+        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 , pi); // Millisec * Second * Minute
+
+/*
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, new Intent(fr.pchab.androidrtc.), PendingIntent.FLAG_UPDATE_CURRENT);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(getApplicationContext().ALARM_SERVICE);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime() + 1000 , 30 * 1000 , pendingIntent);
+
+
+*/
+
+
+
+        client.on("receiveCall", onReceiveCall);
                         client.on("connect",onConnect);
 
+        //pollingThread();
 
 
         return this.START_STICKY;
@@ -165,7 +186,7 @@ public class MyService extends Service {
 
                         int status = (new JSONObject(EntityUtils.toString((httpClient.execute(request)).getEntity()))).getInt("status");
                         if (status != 1) {
-
+                            client.close();
                             client.disconnect();
                             client.connect();
 
@@ -250,3 +271,5 @@ public class MyService extends Service {
 
 
 }
+
+
