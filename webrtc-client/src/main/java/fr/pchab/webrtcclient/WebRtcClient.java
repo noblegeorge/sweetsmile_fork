@@ -406,7 +406,7 @@ public class WebRtcClient {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        iceServers.add(new PeerConnection.IceServer("turn:numb.viagenie.ca:3478","noble@live.in", "Nogetch12!"));
+        iceServers.add(new PeerConnection.IceServer("turn:54.169.168.182:3478","Tesseract", "hfe7y843ncw093"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"));
         pcConstraints.optional.add(new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));

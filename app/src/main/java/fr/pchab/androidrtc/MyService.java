@@ -110,13 +110,7 @@ public class MyService extends Service {
 
         client.connect();
 
-        try {
-            JSONObject message = new JSONObject();
-            message.put("myId", userId);
-            client.emit("resetId", message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
 
         pollingThread();
 
@@ -170,8 +164,10 @@ public class MyService extends Service {
                         int status = (new JSONObject(EntityUtils.toString((httpClient.execute(request)).getEntity()))).getInt("status");
                         if (status != 1) {
 
-                            message.put("myId", userId);
+                            client.disconnect();
+                            client.connect();
 
+                            message.put("myId", userId);
                             client.emit("resetId", message);
 
                         }
@@ -182,7 +178,7 @@ public class MyService extends Service {
 
 
 
-                        Thread.sleep(4000);
+                        Thread.sleep(60000);
                     }
 
 
@@ -232,38 +228,7 @@ public class MyService extends Service {
         }
     };
 
-    class RetrieveStatusTask extends AsyncTask<String, Void, String> {
 
-        private Exception exception;
-
-        @Override
-        protected String doInBackground(String... urls) {
-            String name = "";
-            String id = urls[0];
-            try {
-                HttpClient httpclient = new DefaultHttpClient();
-                String host = "http://" + getResources().getString(R.string.host);
-                host += (":" + getResources().getString(R.string.port) + "/");
-                HttpGet request = new HttpGet(host + "status/" + id);
-                HttpResponse response = httpclient.execute(request);
-                String json_string = EntityUtils.toString(response.getEntity());
-                JSONObject x = new JSONObject(json_string);
-                int status = x.getInt("status");
-                if (status == 1) {
-                    name = "Online";
-                } else {
-                    name = "Offline";
-                }
-
-            } catch (Exception e) {
-                //Log.e("log_tag", "Error in http connection " + e.toString());
-            }
-            return name;
-        }
-
-        protected void onPostExecute(String feed) {
-        }
-    }
 
 
 
