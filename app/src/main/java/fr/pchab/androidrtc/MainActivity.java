@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView mUsernameTV;
     public ArrayList<HistoryItem> arrayOfUsers;
     public static Handler handler = new Handler();
-    public static Socket client;
+    //public static Socket client;
     public Button call;
 
     @Override

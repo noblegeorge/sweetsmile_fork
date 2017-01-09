@@ -126,6 +126,7 @@ public class MyService extends Service {
 
 
                         client.on("receiveCall", onReceiveCall);
+                        client.on("connect",onConnect);
 
 
 
@@ -161,14 +162,15 @@ public class MyService extends Service {
                     for(int i=1;i>0;i++) {
 
 
+
                         int status = (new JSONObject(EntityUtils.toString((httpClient.execute(request)).getEntity()))).getInt("status");
                         if (status != 1) {
 
                             client.disconnect();
                             client.connect();
 
-                            message.put("myId", userId);
-                            client.emit("resetId", message);
+                            //   message.put("myId", userId);
+                            //   client.emit("resetId", message);
 
                         }
 
@@ -194,6 +196,21 @@ public class MyService extends Service {
         t.start();
         return t;
     }
+
+    private Emitter.Listener onConnect = new Emitter.Listener() {
+
+        @Override
+        public void call(Object... args) {
+            try {
+                JSONObject message = new JSONObject();
+                message.put("myId", userId);
+                client.emit("resetId", message);
+            } catch (Exception E){
+
+            }
+        }
+
+    };
 
     private Emitter.Listener onReceiveCall = new Emitter.Listener() {
         @Override

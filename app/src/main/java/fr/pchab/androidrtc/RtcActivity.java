@@ -220,7 +220,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
      *
      * @param view the view that contain the button
      */
-    public void sendMessage(View view) {
+   /* public void sendMessage(View view) {
         String message = mChatEditText.getText().toString();
         if (message.equals("")) return; // Return if empty
         ChatMessage chatMsg = new ChatMessage(username, message, System.currentTimeMillis());
@@ -253,7 +253,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
             inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
         mChatEditText.setText("");
-    }
+    }*/
 
 
     private class UpdateCallDurationTask extends TimerTask {
@@ -294,7 +294,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            client2.close();
+            client2.disconnect();
         }
         closeActivity();
 //        if (client != null) {
@@ -471,14 +471,15 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
         }
     }
 
-public void closeActivity(){
+public void closeActivity() {
 
-    RtcActivity.this.runOnUiThread(new Runnable(){
+    RtcActivity.this.runOnUiThread(new Runnable() {
         @Override
-        public void run () {
+        public void run() {
             finishActivity(0);
         }
     });
+
 }
     /**
      * This function is being when the chat event is being triggered
