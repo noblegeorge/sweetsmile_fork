@@ -417,7 +417,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
         if(client2!=null) {
             client2.disconnect();
         }
-        android.os.Process.killProcess(android.os.Process.myPid());
+      //  android.os.Process.killProcess(android.os.Process.myPid());
         client.onDestroy();
         this.finish();
       //  super.onBackPressed();

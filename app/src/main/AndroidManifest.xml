@@ -61,6 +61,8 @@
                     android:scheme="http" />
             </intent-filter>
         </activity>
+        <activity android:name=".IncomingCallActivity">
+        </activity>
         <activity
             android:name=".LoginActivity">
 

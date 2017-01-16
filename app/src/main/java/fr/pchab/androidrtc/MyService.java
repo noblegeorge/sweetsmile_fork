@@ -250,13 +250,14 @@ public class MyService extends Service {
                 //intent.setComponent(new ComponentName(getPackageName(), IncomingCallActivity.class.getName()));
                 intent.setAction(Intent.ACTION_MAIN);
                 intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.putExtra("CALLER_ID", from);
                 intent.putExtra("USER_ID", userId);
                 intent.putExtra("CALLER_NAME", name);
                 intent.putExtra("USER_NAME", userName);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.setPackage(getApplicationContext().getPackageName());
+
 
             if(client!=null)client.close();
 

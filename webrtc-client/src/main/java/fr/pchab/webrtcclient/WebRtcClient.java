@@ -443,7 +443,7 @@ public class WebRtcClient {
             client.disconnect();
             client.close();
         }
-        android.os.Process.killProcess(android.os.Process.myPid());
+       // android.os.Process.killProcess(android.os.Process.myPid());
 
     }
 
