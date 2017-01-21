@@ -38,9 +38,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
+
                 <EditText
                     android:id="@+id/username"
                     android:layout_width="match_parent"
+                    android:inputType="phone"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_email"
                     android:maxLines="1"
@@ -86,7 +88,7 @@
                     android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Email"
+                    android:hint="Device id"
                     android:maxLines="1"
                     android:singleLine="true" />
             </android.support.design.widget.TextInputLayout>

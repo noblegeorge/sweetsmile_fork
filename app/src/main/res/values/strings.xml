@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Demo chat and call</string>
-    <string name="host">13.76.99.170</string>
+    <string name="host">104.211.245.150</string>
     <string name="port">3000</string>
     <string name="action_settings">Options</string>
     <string name="title_activity_login">Demo chat and call</string>
     <string name="no_call_history">No friends</string>
     <!-- Strings related to login -->
-    <string name="prompt_email">Username</string>
-    <string name="prompt_password">Password</string>
+    <string name="prompt_email">Phone Number</string>
+    <string name="prompt_password">Secret</string>
     <string name="action_sign_in">Sign in</string>
     <string name="action_register">Register</string>
     <string name="prompt_name">Name</string>
-    <string name="prompt_phone">Phone</string>
+    <string name="prompt_phone">IMIEI Number</string>
     <string name="action_back_login">Back to login</string>
     <string name="incoming_call">Incoming Call&#8230;</string>
     <string name="incoming_call_from">Kevin Gleason</string>

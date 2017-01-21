@@ -40,10 +40,11 @@ public class WebRtcClient {
     private MediaConstraints pcConstraints = new MediaConstraints();
     private MediaStream localMS;
     private PeerConnection pc;
-   // private VideoSource videoSource;
+    private VideoSource videoSource;
     private RtcListener mListener;
     private Socket client;
     private String myId;
+    private AudioSource audioSource;
 
     /**
      * Implement this interface to be notified of events.
@@ -434,7 +435,9 @@ public class WebRtcClient {
         for (Peer peer : peers.values()) {
             peer.pc.dispose();
         }
-// videoSource.dispose();
+        //videoSource.dispose();
+        audioSource.dispose();;
+
         factory.dispose();
         if(pc!=null)pc.dispose();
 
@@ -511,7 +514,7 @@ public class WebRtcClient {
          //   localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }*/
 
-        AudioSource audioSource = factory.createAudioSource(new MediaConstraints());
+        audioSource = factory.createAudioSource(new MediaConstraints());
         localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
 
         mListener.onLocalStream(localMS);

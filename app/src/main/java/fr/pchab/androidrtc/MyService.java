@@ -18,16 +18,16 @@ import android.support.v4.app.NotificationCompat;
 
 
 import com.github.nkzawa.emitter.Emitter;
-import org.apache.http.HttpResponse;
+//import org.apache.http.HttpResponse;
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
+//import org.apache.http.HttpResponse;
+//import org.apache.http.client.HttpClient;
+//import org.apache.http.client.methods.HttpGet;
+//import org.apache.http.client.methods.HttpPost;
+//import org.apache.http.impl.client.DefaultHttpClient;
+//import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -96,6 +96,8 @@ public class MyService extends Service {
                 .setContentIntent(contentIntent);
         Notification notification = notificationB.build();
         startForeground(101,notification);
+
+
         // Perform your long running operations here.
         Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
 
@@ -132,7 +134,10 @@ public class MyService extends Service {
         Intent i = new Intent(getApplicationContext(), AlarmReceiver.class);
         PendingIntent pi = PendingIntent.getBroadcast(getApplicationContext(), 0, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 , pi); // Millisec * Second * Minute
+     //   am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 , pi); // Millisec * Second * Minute
+        am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 1000,pi);
+
+
 
 /*
 
@@ -164,7 +169,7 @@ public class MyService extends Service {
 
     }
 
-    public Thread pollingThread() {
+    /*public Thread pollingThread() {
 
 
 
@@ -195,9 +200,9 @@ public class MyService extends Service {
 
                         }
 
-                        /*message=null;
+                        *//*message=null;
                         message.put("myId", model);
-                        client.emit("poll", message);*/
+                        client.emit("poll", message);*//*
 
 
 
@@ -216,7 +221,7 @@ public class MyService extends Service {
         };
         t.start();
         return t;
-    }
+    }*/
 
     private Emitter.Listener onConnect = new Emitter.Listener() {
 
@@ -256,10 +261,12 @@ public class MyService extends Service {
                 intent.putExtra("USER_NAME", userName);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
                 intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
             intent.setPackage(getApplicationContext().getPackageName());
 
 
-            if(client!=null)client.close();
+        //    if(client!=null)client.close();
 
             getApplicationContext().startActivity(intent);
 

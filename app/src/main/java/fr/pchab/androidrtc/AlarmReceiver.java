@@ -17,6 +17,12 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import static fr.pchab.androidrtc.MyService.userId;
 
 
@@ -31,7 +37,8 @@ public class AlarmReceiver extends BroadcastReceiver
         wl.acquire();
 
         // Put here YOUR code.
-        Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show(); // For example
+    //    Toast.makeText(context, "Alarm !!!!!!!!!!", Toast.LENGTH_LONG).show(); // For example
+        setAlarm(context);
         Thread t = pollingThread(context);
         t.interrupt();
         if (!isMyServiceRunning(MyService.class,context)) {
@@ -95,7 +102,19 @@ public class AlarmReceiver extends BroadcastReceiver
         AlarmManager am =( AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, AlarmReceiver.class);
         PendingIntent pi = PendingIntent.getBroadcast(context, 0, i, 0);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 , pi); // Millisec * Second * Minute
+      //  am.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 1000 * 60 , pi); // Millisec * Second * Minute
+
+        /*   // TODO: Update copile SDK to latest and enable setExactAndAllowWhileIdle for API>=23. Depreciated httpClients needs to be fixed.
+
+        if (Build.VERSION.SDK_INT >= 23) {
+
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, 500, pi);
+        } else */ if (Build.VERSION.SDK_INT >= 19) {
+            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+10000, pi);
+        } else {
+            am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+10000, pi);
+        }
+
     }
 
     public void cancelAlarm(Context context)
@@ -114,6 +133,8 @@ public class AlarmReceiver extends BroadcastReceiver
             @Override
             public void run() {
                     try {
+
+
                         HttpClient httpClient = new DefaultHttpClient();
                         String host = "http://" + context.getString(R.string.host);
                         host += (":" + context.getString(R.string.port) + "/");

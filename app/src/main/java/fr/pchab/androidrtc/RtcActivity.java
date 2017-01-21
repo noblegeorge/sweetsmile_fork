@@ -208,7 +208,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
     private void init() {
         Point displaySize = new Point();
         PeerConnectionParameters params = new PeerConnectionParameters(
-                false, false, displaySize.x, displaySize.y, 30, 1, VIDEO_CODEC_VP9, true, 1, AUDIO_CODEC_OPUS, true);
+                false, false, 0, 0, 0, 0, null, false, 1, AUDIO_CODEC_OPUS, true);
         client = new WebRtcClient(this, mSocketAddress, params, this.myId);
     }
 
@@ -218,7 +218,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
      * Get the message from input then add it to chat adapter
      * Transmit the message to other users except the one who call this function
      *
-     * @param view the view that contain the button
+     *  the view that contain the button
      */
    /* public void sendMessage(View view) {
         String message = mChatEditText.getText().toString();
@@ -413,12 +413,11 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
      */
     @Override
     public void onDestroy() {
-      //  client.onDestroy();
+        client.onDestroy();
         if(client2!=null) {
             client2.disconnect();
         }
       //  android.os.Process.killProcess(android.os.Process.myPid());
-        client.onDestroy();
         this.finish();
       //  super.onBackPressed();
 
