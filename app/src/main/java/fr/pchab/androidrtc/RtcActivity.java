@@ -587,7 +587,7 @@ public void closeActivity() {
      */
     public void startCam() {
         // Camera settings
-        client.start("android_test");
+        client.start(myId);
     }
 
     /**

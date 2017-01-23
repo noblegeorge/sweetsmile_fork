@@ -266,7 +266,7 @@ public class MyService extends Service {
             intent.setPackage(getApplicationContext().getPackageName());
 
 
-        //    if(client!=null)client.close();
+            if(client!=null)client.close();
 
             getApplicationContext().startActivity(intent);
 

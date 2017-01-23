@@ -431,24 +431,7 @@ public class WebRtcClient {
     /**
      * Call this method in Activity.onDestroy()
      */
-    public void onDestroy() {
-        for (Peer peer : peers.values()) {
-            peer.pc.dispose();
-        }
-        //videoSource.dispose();
-        audioSource.dispose();;
 
-        factory.dispose();
-        if(pc!=null)pc.dispose();
-
-        if(localMS!=null)localMS.dispose();
-        if(client!=null) {
-            client.disconnect();
-            client.close();
-        }
-       // android.os.Process.killProcess(android.os.Process.myPid());
-
-    }
 
     public void stopVideo() {
         //videoSource.stop();
@@ -543,4 +526,28 @@ public class WebRtcClient {
         return "Camera " + index + ", Facing " + facing
                 + ", Orientation " + info.orientation;
     }*/
+
+    public void onDestroy() {
+        if(client!=null) {
+            client.disconnect();
+            client.close();
+        }
+        for (Peer peer : peers.values()) {
+            peer.pc.dispose();
+        }
+
+        //videoSource.dispose();
+        //audioSource = null;
+       // audioSource.dispose();;
+
+        factory.dispose();
+        if(pc!=null)pc.dispose();
+
+        if(localMS!=null)localMS.dispose();
+
+
+
+         android.os.Process.killProcess(android.os.Process.myPid());
+
+    }
 }
