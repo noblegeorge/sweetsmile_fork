@@ -23,11 +23,14 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import fr.pchab.androidrtc.Adapter.ChatAdapter;
 import fr.pchab.androidrtc.Model.ChatMessage;
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+
+import io.socket.emitter.Emitter;
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,6 +43,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 
 import fr.pchab.webrtcclient.PeerConnectionParameters;
 import fr.pchab.webrtcclient.WebRtcClient;
@@ -137,7 +141,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
 
         hang.setOnClickListener(new View.OnClickListener() {
                                     public void onClick(View v) {
-                                        hangup();
+                                       hangup();
                                     }
         });
 
@@ -160,6 +164,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
             username = extras.getString("name");
             callerName=extras.getString("callerName");
         }
+
         mCallerName.setText(callerName);
         mTimer = new Timer();
         mDurationTask = new UpdateCallDurationTask();
@@ -206,7 +211,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
      * Set up the peer connection parameters get some video information and then pass these information to Webrtcclient class.
      */
     private void init() {
-        Point displaySize = new Point();
+       // Point displaySize = new Point();
         PeerConnectionParameters params = new PeerConnectionParameters(
                 false, false, 0, 0, 0, 0, null, false, 1, AUDIO_CODEC_OPUS, true);
         client = new WebRtcClient(this, mSocketAddress, params, this.myId);
@@ -288,7 +293,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
             client2.connect();
             try {
                 JSONObject message = new JSONObject();
-                message.put("myId", myId);
+              //  message.put("myId", myId);
                 message.put("callerId", number);
                 client2.emit("ejectcall", message);
             } catch (JSONException e) {
@@ -296,21 +301,20 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
             }
             client2.disconnect();
         }
-        closeActivity();
 //        if (client != null) {
 //            client.onDestroy();
    //         onDestroy();
   //          android.os.Process.killProcess(android.os.Process.myPid());
 
-            try {
-               client.removeVideo(number);
+
+   //            client.removeVideo(number);
                 onDestroy();
 
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
- //       }
+ //       closeActivity();
+
+
+        //       }
     }
 
     /**
@@ -384,6 +388,10 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             client.onDestroy();
+            Intent mainview =new Intent(context,MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            context.startActivity(mainview);
 
         }
     }
@@ -411,22 +419,6 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
      * <p/>
      * Destroy the video source
      */
-    @Override
-    public void onDestroy() {
-        client.onDestroy();
-        if(client2!=null) {
-            client2.disconnect();
-        }
-      //  android.os.Process.killProcess(android.os.Process.myPid());
-        this.finish();
-      //  super.onBackPressed();
-
-
-
-
-
-        // android.os.Process.killProcess(android.os.Process.myPid());
-    }
 
     /**
      * This function is being call when user have got an id from nodejs server
@@ -455,7 +447,9 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
      */
     @Override
     public void onReject() {
-
+        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(intent);
 
         onDestroy();
     }
@@ -672,4 +666,35 @@ public void closeActivity() {
                 LOCAL_WIDTH_CONNECTING, LOCAL_HEIGHT_CONNECTING,
                 scalingType,false);
 */    }
+
+
+    @Override
+    public void onDestroy() {
+        try{
+            client.onDestroy();
+        }
+        catch(Exception E){
+
+        }
+        if(client2!=null) {
+            client2.disconnect();
+        }
+        startService(new Intent(this, MyService.class));
+       // client.factory.dispose();
+      //  client.audioSource.dispose();
+
+
+        //  android.os.Process.killProcess(android.os.Process.myPid());
+        closeActivity();
+
+        super.onDestroy();
+
+
+        super.finish();
+        //  super.onBackPressed();
+
+
+
+      //  android.os.Process.killProcess(android.os.Process.myPid());
+    }
 }

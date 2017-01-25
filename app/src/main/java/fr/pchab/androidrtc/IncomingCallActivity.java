@@ -14,8 +14,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -81,11 +81,7 @@ public class IncomingCallActivity extends Activity {
 
         @Override
         public void onFinish() {
-            secs = 0;
-            // I have an Intent you might not need one
-            vib.cancel();
-            mMediaPlayer.stop();
-            mWakeLock.release();
+
             String host = "http://" + getResources().getString(R.string.host);
             host += (":" + getResources().getString(R.string.port) + "/");
             try {
@@ -104,8 +100,8 @@ public class IncomingCallActivity extends Activity {
             }
             client.close();
             userName = userId = null;
-            getService();
             finish();
+         //   onDestroy();
         }
 
         @Override
@@ -136,9 +132,7 @@ public class IncomingCallActivity extends Activity {
     }
 
     public void acceptCall(View view) {
-        vib.cancel();
-        mMediaPlayer.stop();
-        timer.cancel();
+
         Intent intent = new Intent(IncomingCallActivity.this, RtcActivity.class);
         intent.putExtra("id", this.userId);
         intent.putExtra("name",this.userName);
@@ -167,8 +161,8 @@ public class IncomingCallActivity extends Activity {
         client.close();
         startActivity(intent);
         userName = userId = null;
-        this.mWakeLock.release();
         finish();
+     //   onDestroy();
     }
 
     /**
@@ -177,10 +171,7 @@ public class IncomingCallActivity extends Activity {
      * @param view
      */
     public void rejectCall(View view) {
-        vib.cancel();
-        mMediaPlayer.stop();
-        timer.cancel();
-        startService(new Intent(this, MyService.class));
+        getService();
         String host = "http://" + getResources().getString(R.string.host);
         host += (":" + getResources().getString(R.string.port) + "/");
         try {
@@ -199,12 +190,39 @@ public class IncomingCallActivity extends Activity {
         }
         client.close();
         userName = userId = null;
-        this.mWakeLock.release();
 
         finish();
+       // onDestroy();
 
 
 
+
+
+    }
+
+    public void closeActivity() {
+
+        IncomingCallActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                finishActivity(0);
+            }
+        });
+
+    }
+
+    public void onDestroy(){
+
+        secs = 0;
+        // I have an Intent you might not need one
+        vib.cancel();
+        mMediaPlayer.stop();
+        mMediaPlayer.release();
+        mWakeLock.release();
+
+        closeActivity();
+        super.onDestroy();
+        super.finish();
 
     }
 }

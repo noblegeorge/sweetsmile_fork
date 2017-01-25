@@ -1,12 +1,17 @@
 package fr.pchab.webrtcclient;
 
 import android.hardware.Camera;
+import android.media.AudioTrack;
+import android.media.MediaPlayer;
 import android.opengl.EGLContext;
 import android.util.Log;
 
-import com.github.nkzawa.emitter.Emitter;
+import io.socket.emitter.Emitter;
+import io.socket.client.IO;
+import io.socket.client.Socket;
+/*import com.github.nkzawa.emitter.Emitter;
 import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+import com.github.nkzawa.socketio.client.Socket;*/
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +38,7 @@ public class WebRtcClient {
     private final static String TAG = WebRtcClient.class.getCanonicalName();
     private final static int MAX_PEER = 2;
     private boolean[] endPoints = new boolean[MAX_PEER];
-    private PeerConnectionFactory factory;
+    public PeerConnectionFactory factory;
     private HashMap<String, Peer> peers = new HashMap<>();
     private LinkedList<PeerConnection.IceServer> iceServers = new LinkedList<>();
     private PeerConnectionParameters pcParams;
@@ -42,9 +47,11 @@ public class WebRtcClient {
     private PeerConnection pc;
     private VideoSource videoSource;
     private RtcListener mListener;
-    private Socket client;
+    public Socket client;
     private String myId;
-    private AudioSource audioSource;
+    public AudioSource audioSource;
+    public org.webrtc.AudioTrack track;
+    public int Flag = 0;
 
     /**
      * Implement this interface to be notified of events.
@@ -97,6 +104,7 @@ public class WebRtcClient {
      * Then an answer is created using RTCPeerConnection.createAnswer() and sent back to the server, which forwards it to the caller.
      */
     private class CreateAnswerCommand implements Command {
+
         public void execute(String peerId, JSONObject payload) throws JSONException {
             Log.d(TAG, "CreateAnswerCommand");
             mListener.onStatusChanged("CONNECTING");
@@ -191,7 +199,7 @@ public class WebRtcClient {
                         int endPoint = findEndPoint();
                         if (endPoint != MAX_PEER) {
                             Peer peer = addPeer(from, endPoint);
-                            peer.pc.addStream(localMS);
+                           peer.pc.addStream(localMS);
                             commandMap.get(type).execute(from, payload);
                         }
                     } else {
@@ -294,9 +302,9 @@ public class WebRtcClient {
         public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
             Log.d("minhfinal","ice conenction change "+iceConnectionState);
             if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
+                removePeer(id);
                 mListener.onStatusChanged("DISCONNECTED");
                 // sleep(2000);
-                removePeer(id);
                 onDestroy();
 
 
@@ -357,7 +365,7 @@ public class WebRtcClient {
             this.id = id;
             this.endPoint = endPoint;
 
-            pc.addStream(localMS); //, new MediaConstraints()
+ //           pc.addStream(localMS); //, new MediaConstraints()
 
         }
     }
@@ -383,8 +391,8 @@ public class WebRtcClient {
         mListener = listener;
         pcParams = params;
         this.myId = myId;
-        PeerConnectionFactory.initializeAndroidGlobals(listener, true, true,
-                params.videoCodecHwAcceleration);
+        PeerConnectionFactory.initializeAndroidGlobals(listener, true, false,
+                false);
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
 
@@ -407,6 +415,7 @@ public class WebRtcClient {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        iceServers.add(new PeerConnection.IceServer("stun:stun.l.google.com:19302"));
         iceServers.add(new PeerConnection.IceServer("turn:54.169.144.32:3478","Tesseract", "DF34rFef44fref"));
         iceServers.add(new PeerConnection.IceServer("stun:54.169.144.32:3478"));
         pcConstraints.mandatory.add(new MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"));
@@ -493,17 +502,18 @@ public class WebRtcClient {
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxFrameRate", Integer.toString(pcParams.videoFps)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("minFrameRate", Integer.toString(pcParams.videoFps)));
 
-         //   videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
-         //   localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
+            videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
+            localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
         }*/
 
         audioSource = factory.createAudioSource(new MediaConstraints());
-        localMS.addTrack(factory.createAudioTrack("ARDAMSa0", audioSource));
+        track = factory.createAudioTrack("ARDAMSa0", audioSource);
+        localMS.addTrack(track);
 
         mListener.onLocalStream(localMS);
     }
-/*
-    private VideoCapturer getVideoCapturer() {
+
+  /*  private VideoCapturer getVideoCapturer() {
         String frontCameraDeviceName = getNameOfFrontFacingDevice();
         return VideoCapturerAndroid.create(frontCameraDeviceName);
     }
@@ -528,26 +538,40 @@ public class WebRtcClient {
     }*/
 
     public void onDestroy() {
-        if(client!=null) {
-            client.disconnect();
-            client.close();
+        if (Flag == 0) {
+            for (Peer peer : peers.values()) {
+                peer.pc.close();
+                peer.pc.removeStream(localMS);
+                peer.pc.dispose();
+            }
+ //           pc.close();
+ //           pc.removeStream(localMS);
+ //           pc.dispose();
+         /*   pc.close();
+            pc.removeStream(localMS);
+            pc.dispose();*/
+
+                localMS.removeTrack(track);
+
+           // localMS.dispose();
+            track.dispose();
+            audioSource.dispose();
+
+            if(pc!=null) {
+                pc.close();
+                pc.dispose();
+            }
+            localMS=null;
+            factory.dispose();
+            //      videoSource.stop();
+            //     localMS.dispose();
+            //
+            //  if(audioSource!=null)audioSource.dispose();
+            //     if(factory!=null)factory.dispose();
+            if (client != null) client.disconnect();
+            if (client != null) client.close();
         }
-        for (Peer peer : peers.values()) {
-            peer.pc.dispose();
-        }
-
-        //videoSource.dispose();
-        //audioSource = null;
-       // audioSource.dispose();;
-
-        factory.dispose();
-        if(pc!=null)pc.dispose();
-
-        if(localMS!=null)localMS.dispose();
-
-
-
-         android.os.Process.killProcess(android.os.Process.myPid());
+        Flag=1;
 
     }
 }

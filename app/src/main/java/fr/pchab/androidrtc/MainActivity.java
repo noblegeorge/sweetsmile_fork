@@ -24,9 +24,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-import com.github.nkzawa.emitter.Emitter;
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+import io.socket.emitter.Emitter;
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 import io.fabric.sdk.android.Fabric;
 import org.apache.http.HttpResponse;
@@ -111,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (name=="Online") {
                     dispatchCall(id);
+                    Intent intent = new Intent(MainActivity.this, MyService.class);
+                    stopService(intent);
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Offline",Toast.LENGTH_SHORT);

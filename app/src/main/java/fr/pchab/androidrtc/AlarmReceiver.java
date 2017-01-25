@@ -110,9 +110,9 @@ public class AlarmReceiver extends BroadcastReceiver
 
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, 500, pi);
         } else */ if (Build.VERSION.SDK_INT >= 19) {
-            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+10000, pi);
+            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+60000, pi);
         } else {
-            am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+10000, pi);
+            am.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()+60000, pi);
         }
 
     }

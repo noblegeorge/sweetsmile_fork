@@ -17,10 +17,9 @@ import android.widget.Toast;
 import android.support.v4.app.NotificationCompat;
 
 
-import com.github.nkzawa.emitter.Emitter;
-//import org.apache.http.HttpResponse;
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
+import io.socket.emitter.Emitter;
+import io.socket.client.IO;
+import io.socket.client.Socket;
 
 //import org.apache.http.HttpResponse;
 //import org.apache.http.client.HttpClient;
@@ -95,7 +94,7 @@ public class MyService extends Service {
                 .setSmallIcon(R.drawable.fab_background)
                 .setContentIntent(contentIntent);
         Notification notification = notificationB.build();
-        startForeground(101,notification);
+        // startForeground(101,notification);
 
 
         // Perform your long running operations here.
@@ -265,14 +264,25 @@ public class MyService extends Service {
 
             intent.setPackage(getApplicationContext().getPackageName());
 
-
-            if(client!=null)client.close();
-
             getApplicationContext().startActivity(intent);
+
+
+            if(client!=null){
+                client.disconnect();
+                client.close();
+                client = null;
+            }
+
+            stopSelf();
 
 
         }
     };
+
+
+
+
+
 
 
 
