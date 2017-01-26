@@ -111,8 +111,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 if (name=="Online") {
                     dispatchCall(id);
-                    Intent intent = new Intent(MainActivity.this, MyService.class);
-                    stopService(intent);
+           //         Intent intent = new Intent(MainActivity.this, MyService.class);
+            //        stopService(intent);
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Offline",Toast.LENGTH_SHORT);

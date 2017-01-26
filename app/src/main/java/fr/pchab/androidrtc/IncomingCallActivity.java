@@ -82,23 +82,25 @@ public class IncomingCallActivity extends Activity {
         @Override
         public void onFinish() {
 
-            String host = "http://" + getResources().getString(R.string.host);
+            client=MyService.client;
+
+          /*  String host = "http://" + getResources().getString(R.string.host);
             host += (":" + getResources().getString(R.string.port) + "/");
             try {
                 client = IO.socket(host);
             } catch (URISyntaxException e) {
                 e.printStackTrace();
-            }
-            client.connect();
+            }*/
+          //  client.connect();
             try {
                 JSONObject message = new JSONObject();
                 message.put("myId", userId);
                 message.put("callerId", callerId);
-                client.emit("ejectcall", message);
+                MyService.client.emit("ejectcall", message);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            client.close();
+           // client.close();
             userName = userId = null;
             finish();
          //   onDestroy();
@@ -133,32 +135,28 @@ public class IncomingCallActivity extends Activity {
 
     public void acceptCall(View view) {
 
-        Intent intent = new Intent(IncomingCallActivity.this, RtcActivity.class);
+        Intent intent = new Intent(IncomingCallActivity.this, RtcIncomingActivity.class);
         intent.putExtra("id", this.userId);
         intent.putExtra("name",this.userName);
-        intent.putExtra("callerIdChat", callerId);
+        intent.putExtra("callerId", callerId);
         intent.putExtra("callerName",callerName);
         String host = "http://" + getResources().getString(R.string.host);
         host += (":" + getResources().getString(R.string.port) + "/");
-        try {
+
+        client=MyService.client;
+
+        /*try {
             client = IO.socket(host);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        client.connect();
-        try {
-            JSONObject message = new JSONObject();
-            message.put("myId", userId);
-            message.put("callerId", callerId);
-            client.emit("acceptcall", message);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        client.connect();*/
+
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        client.close();
+      //  client.close();
         startActivity(intent);
         userName = userId = null;
         finish();
@@ -172,23 +170,25 @@ public class IncomingCallActivity extends Activity {
      */
     public void rejectCall(View view) {
         getService();
-        String host = "http://" + getResources().getString(R.string.host);
+        /*String host = "http://" + getResources().getString(R.string.host);
         host += (":" + getResources().getString(R.string.port) + "/");
         try {
             client = IO.socket(host);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        client.connect();
+        client.connect();*/
+        client=MyService.client;
+
         try {
             JSONObject message = new JSONObject();
             message.put("myId", userId);
             message.put("callerId", callerId);
-            client.emit("ejectcall", message);
+            MyService.client.emit("ejectcall", message);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        client.close();
+        //client.close();
         userName = userId = null;
 
         finish();
@@ -212,6 +212,7 @@ public class IncomingCallActivity extends Activity {
     }
 
     public void onDestroy(){
+        client=null;
 
         secs = 0;
         // I have an Intent you might not need one

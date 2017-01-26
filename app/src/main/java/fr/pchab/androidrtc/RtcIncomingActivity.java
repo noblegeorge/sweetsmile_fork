@@ -9,48 +9,39 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
-//import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import fr.pchab.androidrtc.Adapter.ChatAdapter;
-import fr.pchab.androidrtc.Model.ChatMessage;
-
-import io.socket.emitter.Emitter;
-import io.socket.client.IO;
-import io.socket.client.Socket;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.MediaStream;
-//import org.webrtc.RendererCommon;
-//import org.webrtc.VideoRenderer;
 
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
 
+import fr.pchab.androidrtc.Adapter.ChatAdapter;
 import fr.pchab.webrtcclient.PeerConnectionParameters;
 import fr.pchab.webrtcclient.WebRtcClient;
+import io.socket.client.Socket;
 
 import static android.os.SystemClock.sleep;
 
-public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
+//import android.opengl.GLSurfaceView;
+//import org.webrtc.RendererCommon;
+//import org.webrtc.VideoRenderer;
+
+public class RtcIncomingActivity extends Activity implements WebRtcClient.RtcListener {
     private static final String VIDEO_CODEC_VP9 = "VP8";
     private static final String AUDIO_CODEC_OPUS = "opus";
     // Local preview screen position before call is connected.
@@ -160,7 +151,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
         if (extras != null) {
             myId = extras.getString("id");
             number = extras.getString("number");
-            callerIdChat = extras.getString("callerIdChat");
+            callerIdChat = extras.getString("callerId");
             username = extras.getString("name");
             callerName=extras.getString("callerName");
         }
@@ -215,6 +206,14 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
         PeerConnectionParameters params = new PeerConnectionParameters(
                 false, false, 0, 0, 0, 0, null, false, 1, AUDIO_CODEC_OPUS, true);
         client = new WebRtcClient(this, mSocketAddress, params, this.myId, MyService.client);
+        try {
+            JSONObject message = new JSONObject();
+            message.put("myId", myId);
+            message.put("callerId", callerIdChat);
+            client.client.emit("acceptcall", message);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -265,7 +264,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
 
         @Override
         public void run() {
-            RtcActivity.this.runOnUiThread(new Runnable() {
+            RtcIncomingActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     updateCallDuration();
@@ -347,7 +346,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
                     .getSystemService(
                             getApplicationContext().NOTIFICATION_SERVICE);
             Intent in = new Intent(getApplicationContext(),
-                    RtcActivity.class);
+                    RtcIncomingActivity.class);
             Notification notification = new Notification(R.drawable.notification_template_icon_bg,
                     "Demo video  ", System.currentTimeMillis());
             RemoteViews notificationView = new RemoteViews(getPackageName(),
@@ -464,7 +463,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
 
 public void closeActivity() {
 
-    RtcActivity.this.runOnUiThread(new Runnable() {
+    RtcIncomingActivity.this.runOnUiThread(new Runnable() {
         @Override
         public void run() {
             finishActivity(0);

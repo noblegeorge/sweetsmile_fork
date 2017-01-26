@@ -267,13 +267,13 @@ public class MyService extends Service {
             getApplicationContext().startActivity(intent);
 
 
-            if(client!=null){
+          /*  if(client!=null){
                 client.disconnect();
                 client.close();
                 client = null;
-            }
+            }*/
 
-            stopSelf();
+         //   stopSelf();
 
 
         }

@@ -387,7 +387,7 @@ public class WebRtcClient {
         endPoints[peer.endPoint] = false;
     }
 
-    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, String myId) {
+    public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, String myId, Socket clientArg) {
         mListener = listener;
         pcParams = params;
         this.myId = myId;
@@ -395,12 +395,12 @@ public class WebRtcClient {
                 false);
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
-
-        try {
+        client = clientArg;
+      /*  try {
             client = IO.socket(host);
         } catch (URISyntaxException e) {
             e.printStackTrace();
-        }
+        }*/
         client.on("id", messageHandler.onId);
         client.on("message", messageHandler.onMessage);
         client.on("chat", messageHandler.onChat);
@@ -559,17 +559,18 @@ public class WebRtcClient {
 
             if(pc!=null) {
                 pc.close();
-                pc.dispose();
+     //           pc.dispose();
             }
             localMS=null;
-            factory.dispose();
+            factory=null;
             //      videoSource.stop();
             //     localMS.dispose();
             //
             //  if(audioSource!=null)audioSource.dispose();
             //     if(factory!=null)factory.dispose();
-            if (client != null) client.disconnect();
-            if (client != null) client.close();
+            /*if (client != null) client.disconnect();
+            if (client != null) client.close();*/
+            client=null;
         }
         Flag=1;
 
