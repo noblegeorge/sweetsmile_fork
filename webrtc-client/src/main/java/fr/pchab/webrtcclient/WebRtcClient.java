@@ -32,6 +32,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+
 import static android.os.SystemClock.sleep;
 
 public class WebRtcClient {
@@ -51,6 +52,7 @@ public class WebRtcClient {
     private String myId;
     public AudioSource audioSource;
     public org.webrtc.AudioTrack track;
+    public MediaConstraints mc;
     public int Flag = 0;
 
     /**
@@ -87,7 +89,8 @@ public class WebRtcClient {
      */
     private class CreateOfferCommand implements Command {
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG, "CreateOfferCommand");
+            Log.d("Test : ","CreateOfferCommand");
+            peers.values();
             mListener.onStatusChanged("CONNECTING");
             Peer peer = peers.get(peerId);
             peer.pc.createOffer(peer, pcConstraints);
@@ -106,7 +109,7 @@ public class WebRtcClient {
     private class CreateAnswerCommand implements Command {
 
         public void execute(String peerId, JSONObject payload) throws JSONException {
-            Log.d(TAG, "CreateAnswerCommand");
+            Log.d("Test : ","CreateAnswerCommand");
             mListener.onStatusChanged("CONNECTING");
             Peer peer = peers.get(peerId);
             SessionDescription sdp = new SessionDescription(
@@ -122,7 +125,7 @@ public class WebRtcClient {
     private class SetRemoteSDPCommand implements Command {
         public void execute(String peerId, JSONObject payload) throws JSONException {
 
-            Log.d(TAG, "SetRemoteSDPCommand");
+            Log.d("Test : ","SetRemoteSDPCommand");
             Peer peer = peers.get(peerId);
             SessionDescription sdp = new SessionDescription(
                     SessionDescription.Type.fromCanonicalForm(payload.getString("type")),
@@ -137,7 +140,7 @@ public class WebRtcClient {
             mListener.onStatusChanged("CONNECTED");
 
 
-            Log.d(TAG, "AddIceCandidateCommand");
+            Log.d("Test : ","AddIceCandidateCommand");
 
             pc = peers.get(peerId).pc;
             if (pc.getRemoteDescription() != null) {
@@ -161,6 +164,9 @@ public class WebRtcClient {
      */
     public void sendMessage(String to, String type, JSONObject payload) throws JSONException {
 
+        Log.d("Test : ","sendMessage");
+
+
 
         JSONObject message = new JSONObject();
         message.put("to", to);
@@ -171,10 +177,15 @@ public class WebRtcClient {
     }
 
     private class MessageHandler {
+
         private HashMap<String, Command> commandMap;
 
         private MessageHandler() {
+            Log.d("Test : ","MessageHandler");
+
             this.commandMap = new HashMap<>();
+            JSONObject message = new JSONObject();
+
             commandMap.put("init", new CreateOfferCommand());
             commandMap.put("offer", new CreateAnswerCommand());
             commandMap.put("answer", new SetRemoteSDPCommand());
@@ -184,12 +195,14 @@ public class WebRtcClient {
         private Emitter.Listener onMessage = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
+                Log.d("Test : ","onMessage");
+
                 JSONObject data = (JSONObject) args[0];
                 try {
                     String from = data.getString("from");
                     String type = data.getString("type");
                     JSONObject payload = null;
-                    Log.d("minhhere ", from + " " + type);
+                    Log.d("Test : onMessage ", from + " " + type);
                     if (!type.equals("init")) {
                         payload = data.getJSONObject("payload");
                     }
@@ -212,22 +225,37 @@ public class WebRtcClient {
         };
 
         private Emitter.Listener onEject = new Emitter.Listener() {
+
+
+
             @Override
             public void call(Object... args) {
+                Log.d("Test : ","onEject");
+
                 mListener.onReject();
             }
-        };
+        }
+                ;
 
         private Emitter.Listener onRemoveCall = new Emitter.Listener() {
+
+
+
+
             @Override
             public void call(Object... args) {
-                Log.d("minhhangup","test");
+                Log.d("Test : ","onRemoveCall");
+
             }
         };
 
         private Emitter.Listener onAccept = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
+
+                Log.d("Test : ","onAccept");
+
+
                 JSONObject data = (JSONObject) args[0];
                 try {
                     String from = data.getString("myId");
@@ -243,6 +271,10 @@ public class WebRtcClient {
         private Emitter.Listener onId = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
+
+                Log.d("Test : ","onId");
+
+
                 String id = (String) args[0];
                 mListener.onCallReady(id);
             }
@@ -252,6 +284,9 @@ public class WebRtcClient {
         private Emitter.Listener onChat = new Emitter.Listener() {
             @Override
             public void call(Object... args) {
+
+                Log.d("Test : ","onChat");
+
                 try {
                     JSONObject obj = (JSONObject) args[0];
                     String id = obj.getString("user_id");
@@ -264,12 +299,19 @@ public class WebRtcClient {
     }
 
     private class Peer implements SdpObserver, PeerConnection.Observer {
+
+
+
         private PeerConnection pc;
         private String id;
         private int endPoint;
 
         @Override
         public void onCreateSuccess(final SessionDescription sdp) {
+
+            Log.d("Test : ","Peer.onCreateSuccess");
+
+
             // TODO: modify sdp to use pcParams prefered codecs
             try {
                 JSONObject payload = new JSONObject();
@@ -284,23 +326,31 @@ public class WebRtcClient {
 
         @Override
         public void onSetSuccess() {
+            Log.d("Test : ","Peer.onSetSuccess");
+
         }
 
         @Override
         public void onCreateFailure(String s) {
+            Log.d("Test : ","Peer.onCreateFailure");
+
         }
 
         @Override
         public void onSetFailure(String s) {
+            Log.d("Test : ","Peer.onSetFailure");
+
         }
 
         @Override
         public void onSignalingChange(PeerConnection.SignalingState signalingState) {
+            Log.d("Test : ","Peer.onSignalingChange");
+
         }
 
         @Override
         public void onIceConnectionChange(PeerConnection.IceConnectionState iceConnectionState) {
-            Log.d("minhfinal","ice conenction change "+iceConnectionState);
+            Log.d("Test : ","onIceConnectionChange"+iceConnectionState);
             if (iceConnectionState == PeerConnection.IceConnectionState.DISCONNECTED) {
                 removePeer(id);
                 mListener.onStatusChanged("DISCONNECTED");
@@ -313,15 +363,21 @@ public class WebRtcClient {
         }
 
         public void onIceConnectionReceivingChange(boolean b) {
+            Log.d("Test : ","Peer.onIceConnectionReceivingChange");
+
 
         }
 
         @Override
         public void onIceGatheringChange(PeerConnection.IceGatheringState iceGatheringState) {
+            Log.d("Test : ","Peer.onIceGatheringChange");
+
         }
 
         @Override
         public void onIceCandidate(final IceCandidate candidate) {
+            Log.d("Test : ","Peer.onIceCandidate");
+
             try {
                 JSONObject payload = new JSONObject();
                 payload.put("label", candidate.sdpMLineIndex);
@@ -336,41 +392,50 @@ public class WebRtcClient {
         @Override
         public void onAddStream(MediaStream mediaStream) {
             mListener.onStatusChanged("CONNECTED");
-            Log.d(TAG, "onAddStream " + mediaStream.label());
+            Log.d("Test : ","Peer.onAddStream" + mediaStream.label());
+
             // remote streams are displayed from 1 to MAX_PEER (0 is localStream)
             mListener.onAddRemoteStream(mediaStream, endPoint + 1);
         }
 
         @Override
         public void onRemoveStream(MediaStream mediaStream) {
+            Log.d("Test : ","Peer.onRemoveStream"+ mediaStream.label());
             mListener.onStatusChanged("DISCONNECTED");
 
-            Log.d(TAG, "onRemoveStream " + mediaStream.label());
             removePeer(id);
         }
 
         @Override
         public void onDataChannel(DataChannel dataChannel) {
+            Log.d("Test : ","Peer.onDataChannel");
+
         }
 
         @Override
         public void onRenegotiationNeeded() {
 
+            Log.d("Test : ","Peer.onRenegotiationNeeded");
+
+
         }
 
         public Peer(String id, int endPoint) {
 
-            Log.d("anhminh", "new Peer: " + id + " " + endPoint);
+
+            Log.d("Test : ", "Peer | new Peer: " + id + " " + endPoint);
             this.pc = factory.createPeerConnection(iceServers, pcConstraints, this);
             this.id = id;
             this.endPoint = endPoint;
 
- //           pc.addStream(localMS); //, new MediaConstraints()
+            pc.addStream(localMS); //, new MediaConstraints()
 
         }
     }
 
     private Peer addPeer(String id, int endPoint) {
+        Log.d("Test : ","addPeer");
+
         Peer peer = new Peer(id, endPoint);
         peers.put(id, peer);
 
@@ -380,14 +445,20 @@ public class WebRtcClient {
     }
 
     public void removePeer(String id) {
+        Log.d("Test : ","removePeer");
+
         Peer peer = peers.get(id);
         mListener.onRemoveRemoteStream(peer.endPoint);
         peer.pc.close();
         peers.remove(peer.id);
+        peers.clear();
+        //mListener.onRemoveRemoteStream(localMS,peer.pc);
+
         endPoints[peer.endPoint] = false;
     }
 
     public WebRtcClient(RtcListener listener, String host, PeerConnectionParameters params, String myId, Socket clientArg) {
+        Log.d("Test : ","WebRtcClient");
         mListener = listener;
         pcParams = params;
         this.myId = myId;
@@ -427,14 +498,18 @@ public class WebRtcClient {
      * Call this method in Activity.onPause()
      */
     public void onPause() {
-       // if (videoSource != null) videoSource.stop();
+        Log.d("Test : ","onPause");
+
+        // if (videoSource != null) videoSource.stop();
     }
 
     /**
      * Call this method in Activity.onResume()
      */
     public void onResume() {
-       // if (videoSource != null) videoSource.restart();
+        Log.d("Test : ","onResume");
+
+        // if (videoSource != null) videoSource.restart();
     }
 
     /**
@@ -443,10 +518,14 @@ public class WebRtcClient {
 
 
     public void stopVideo() {
+        Log.d("Test : ","stopVideo");
+
         //videoSource.stop();
     }
 
     private int findEndPoint() {
+        Log.d("Test : ","findEndPoint");
+
         for (int i = 0; i < MAX_PEER; i++) if (!endPoints[i]) return i;
         return MAX_PEER;
     }
@@ -460,14 +539,16 @@ public class WebRtcClient {
      * @param name client name
      */
     public void start(String name) {
+        Log.d("Test : ","start");
+
         setCamera();
-        try {
+       /* try {
             JSONObject message = new JSONObject();
             message.put("name", name);
             client.emit("readyToStream", message);
         } catch (JSONException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void transmitChat(JSONObject message) {
@@ -475,17 +556,22 @@ public class WebRtcClient {
     }
 
     public void removeVideo(String otherID) throws JSONException{
+        Log.d("Test : ","removeVideo");
+
         JSONObject message = new JSONObject();
         message.put("other", otherID);
         client.emit("removeVideo", message);
     }
 
     public String client_id() {
+        Log.d("Test : ","client_id");
+
         return client.id();
     }
 
     public void startClient(String to, String type, JSONObject payload) throws JSONException {
-        Log.d("minhminh", "vao ham moi tao");
+        Log.d("Test : ","startClient");
+
         JSONObject message = new JSONObject();
         message.put("to", to);
         message.put("type", type);
@@ -494,8 +580,12 @@ public class WebRtcClient {
     }
 
     private void setCamera() {
+        Log.d("Test : ","setCamera");
+
         localMS = factory.createLocalMediaStream("ARDAMS");
-        /*if (pcParams.videoCallEnabled) {
+
+
+        /* if (pcParams.videoCallEnabled) {
             MediaConstraints videoConstraints = new MediaConstraints();
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxHeight", Integer.toString(pcParams.videoHeight)));
             videoConstraints.mandatory.add(new MediaConstraints.KeyValuePair("maxWidth", Integer.toString(pcParams.videoWidth)));
@@ -504,12 +594,11 @@ public class WebRtcClient {
 
             videoSource = factory.createVideoSource(getVideoCapturer(), videoConstraints);
             localMS.addTrack(factory.createVideoTrack("ARDAMSv0", videoSource));
-        }*/
-
-        audioSource = factory.createAudioSource(new MediaConstraints());
+        } */
+        mc = new MediaConstraints();
+        audioSource = factory.createAudioSource(mc);
         track = factory.createAudioTrack("ARDAMSa0", audioSource);
         localMS.addTrack(track);
-
         mListener.onLocalStream(localMS);
     }
 
@@ -538,31 +627,57 @@ public class WebRtcClient {
     }*/
 
     public void onDestroy() {
+        Log.d("Test : ","onDestroy");
+
         if (Flag == 0) {
+
+/*            if(pc!=null) {
+                //       pc.dispose();
+                      pc.close();
+
+              pc.dispose();
+                //           pc.dispose();
+            }*/
+
             for (Peer peer : peers.values()) {
-                peer.pc.close();
                 peer.pc.removeStream(localMS);
+                peer.pc.close();
                 peer.pc.dispose();
             }
- //           pc.close();
- //           pc.removeStream(localMS);
- //           pc.dispose();
-         /*   pc.close();
+           // pc.removeStream(localMS);
+
+ //         pc.close();
+ //         pc.removeStream(localMS);
+ //         pc.dispose();
+
+         /* pc.close();
             pc.removeStream(localMS);
-            pc.dispose();*/
+            pc.dispose(); */
 
-                localMS.removeTrack(track);
 
-           // localMS.dispose();
+
+            localMS.removeTrack(track);
+
+            // localMS.dispose();
             track.dispose();
             audioSource.dispose();
 
-            if(pc!=null) {
-                pc.close();
-     //           pc.dispose();
+           // pcConstraints.mandatory.clear();
+           // pcConstraints.optional.clear();
+
+
+            try {
+                JSONObject message = new JSONObject();
+                message.put("myId", this.myId);
+                client.emit("resetId", message);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            localMS=null;
-            factory=null;
+
+          //  factory.stopAecDump();
+         //   localMS=null;
+          //  factory=null;
+
             //      videoSource.stop();
             //     localMS.dispose();
             //
@@ -570,7 +685,8 @@ public class WebRtcClient {
             //     if(factory!=null)factory.dispose();
             /*if (client != null) client.disconnect();
             if (client != null) client.close();*/
-            client=null;
+
+          //  client=null;
         }
         Flag=1;
 

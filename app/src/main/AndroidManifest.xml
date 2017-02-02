@@ -49,6 +49,7 @@
             android:name=".RtcActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
+            android:noHistory="true"
             android:screenOrientation="portrait">
             <intent-filter>
 
@@ -66,6 +67,7 @@
             android:name=".RtcIncomingActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
+            android:noHistory="true"
             android:screenOrientation="portrait">
             <intent-filter>
 
@@ -79,7 +81,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".IncomingCallActivity">
+        <activity android:name=".IncomingCallActivity"
+            >
         </activity>
         <activity
             android:name=".LoginActivity">

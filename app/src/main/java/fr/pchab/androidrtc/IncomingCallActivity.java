@@ -135,6 +135,7 @@ public class IncomingCallActivity extends Activity {
 
     public void acceptCall(View view) {
 
+
         Intent intent = new Intent(IncomingCallActivity.this, RtcIncomingActivity.class);
         intent.putExtra("id", this.userId);
         intent.putExtra("name",this.userName);
@@ -160,7 +161,7 @@ public class IncomingCallActivity extends Activity {
         startActivity(intent);
         userName = userId = null;
         finish();
-     //   onDestroy();
+        closeActivity();
     }
 
     /**
@@ -192,7 +193,7 @@ public class IncomingCallActivity extends Activity {
         userName = userId = null;
 
         finish();
-       // onDestroy();
+        closeActivity();
 
 
 
@@ -212,6 +213,10 @@ public class IncomingCallActivity extends Activity {
     }
 
     public void onDestroy(){
+
+        timer.cancel();
+        timer=null;
+
         client=null;
 
         secs = 0;
@@ -221,7 +226,6 @@ public class IncomingCallActivity extends Activity {
         mMediaPlayer.release();
         mWakeLock.release();
 
-        closeActivity();
         super.onDestroy();
         super.finish();
 

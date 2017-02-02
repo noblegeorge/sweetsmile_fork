@@ -93,6 +93,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
     private long mCallStart = 0;
     private UpdateCallDurationTask mDurationTask;
     public String status;
+    public int flag = 0;
 
 
     private PowerManager powerManager;
@@ -306,7 +307,10 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
 
 
    //            client.removeVideo(number);
-                onDestroy();
+
+        wakeLock.release();
+
+        onDestroy();
 
 
  //       closeActivity();
@@ -448,6 +452,10 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         startActivity(intent);
+
+
+        wakeLock.release();
+
 
         onDestroy();
     }
@@ -608,6 +616,9 @@ public void closeActivity() {
                     case "DISCONNECTED":
                         mCallState.setText("DISCONNECTED");
                         sleep(1000);
+
+                        wakeLock.release();
+
                         onDestroy();
                         break;
                     default:
@@ -668,32 +679,52 @@ public void closeActivity() {
 
     @Override
     public void onDestroy() {
-        try{
-            client.onDestroy();
-        }
-        catch(Exception E){
 
-        }
+
+        if(flag==0) {
+
+            mTimer.cancel();
+            mTimer = null;
+
+
+            try {
+                client.onDestroy();
+            } catch (Exception E) {
+
+            }
        /* if(client2!=null) {
             client2.disconnect();
         }*/
-        client2=null;
-        startService(new Intent(this, MyService.class));
-       // client.factory.dispose();
-      //  client.audioSource.dispose();
+            client2 = null;
+            startService(new Intent(this, MyService.class));
+            // client.factory.dispose();
+            //  client.audioSource.dispose();
+
+
+            //  android.os.Process.killProcess(android.os.Process.myPid());
+            //closeActivity();
+
+
+
+
+            flag =1;
+
+
+
+          //  super.onBackPressed();
+
+         //   super.finish();
+
+
+
+        }
+        finishActivity(0);
+
+        super.onDestroy();
+        super.finish();
+
 
 
         //  android.os.Process.killProcess(android.os.Process.myPid());
-        closeActivity();
-
-        super.onDestroy();
-
-
-        super.finish();
-        //  super.onBackPressed();
-
-
-
-      //  android.os.Process.killProcess(android.os.Process.myPid());
     }
 }
