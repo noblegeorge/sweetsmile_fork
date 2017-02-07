@@ -389,11 +389,12 @@ public class RtcIncomingActivity extends Activity implements WebRtcClient.RtcLis
     public static class stopButtonListener extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            client.onDestroy();
             Intent mainview =new Intent(context,MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             context.startActivity(mainview);
+            client.onDestroy();
+
 
         }
     }
@@ -679,6 +680,9 @@ public void closeActivity() {
     @Override
     public void onDestroy() {if(flag==0) {
 
+     //   android.os.Process.killProcess(android.os.Process.myPid());
+
+
         mTimer.cancel();
         mTimer = null;
 
@@ -720,7 +724,7 @@ public void closeActivity() {
         super.finish();
 
 
-        //  android.os.Process.killProcess(android.os.Process.myPid());
+          android.os.Process.killProcess(android.os.Process.myPid());
 
     }
 }

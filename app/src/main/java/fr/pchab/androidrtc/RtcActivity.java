@@ -389,11 +389,11 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
     public static class stopButtonListener extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            client.onDestroy();
             Intent mainview =new Intent(context,MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
             intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
             context.startActivity(mainview);
+            client.onDestroy();
 
         }
     }
@@ -701,7 +701,6 @@ public void closeActivity() {
             //  client.audioSource.dispose();
 
 
-            //  android.os.Process.killProcess(android.os.Process.myPid());
             //closeActivity();
 
 
@@ -725,6 +724,6 @@ public void closeActivity() {
 
 
 
-        //  android.os.Process.killProcess(android.os.Process.myPid());
+          android.os.Process.killProcess(android.os.Process.myPid());
     }
 }

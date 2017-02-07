@@ -669,12 +669,13 @@ public class MainActivity extends AppCompatActivity {
 //            intent.putExtra("number", callNum);
 //
 //        }
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         Log.d("minhfinal", "come here re");
         intent.putExtra("id", this.userId);
         intent.putExtra("name", this.userName);
         intent.putExtra("number", callNum);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
         callNum=null;
         startActivity(intent);
         finish();

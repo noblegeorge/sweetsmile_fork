@@ -627,7 +627,7 @@ public class WebRtcClient {
     }*/
 
     public void onDestroy() {
-        Log.d("Test : ","onDestroy");
+//        Log.d("Test : ","onDestroy");
 
         if (Flag == 0) {
 
@@ -660,6 +660,7 @@ public class WebRtcClient {
 
             // localMS.dispose();
             track.dispose();
+
             audioSource.dispose();
 
            // pcConstraints.mandatory.clear();
@@ -689,6 +690,7 @@ public class WebRtcClient {
           //  client=null;
         }
         Flag=1;
+
 
     }
 }

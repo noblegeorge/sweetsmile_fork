@@ -152,12 +152,10 @@ public class IncomingCallActivity extends Activity {
             e.printStackTrace();
         }
         client.connect();*/
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-      //  client.close();
+        //  client.close();
         startActivity(intent);
         userName = userId = null;
         finish();
@@ -222,7 +220,7 @@ public class IncomingCallActivity extends Activity {
         secs = 0;
         // I have an Intent you might not need one
         vib.cancel();
-        mMediaPlayer.stop();
+        mMediaPlayer.reset();
         mMediaPlayer.release();
         mWakeLock.release();
 

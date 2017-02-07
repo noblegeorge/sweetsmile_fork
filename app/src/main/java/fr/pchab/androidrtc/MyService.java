@@ -258,9 +258,17 @@ public class MyService extends Service {
                 intent.putExtra("USER_ID", userId);
                 intent.putExtra("CALLER_NAME", name);
                 intent.putExtra("USER_NAME", userName);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-                intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK| Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+
+
+            //  intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+
+
 
             intent.setPackage(getApplicationContext().getPackageName());
 
