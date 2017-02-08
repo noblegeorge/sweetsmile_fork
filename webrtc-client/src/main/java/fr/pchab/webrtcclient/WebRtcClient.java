@@ -467,11 +467,11 @@ public class WebRtcClient {
         factory = new PeerConnectionFactory();
         MessageHandler messageHandler = new MessageHandler();
         client = clientArg;
-      /*  try {
+       try {
             client = IO.socket(host);
         } catch (URISyntaxException e) {
             e.printStackTrace();
-        }*/
+        }
         client.on("id", messageHandler.onId);
         client.on("message", messageHandler.onMessage);
         client.on("chat", messageHandler.onChat);

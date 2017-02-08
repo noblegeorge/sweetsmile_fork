@@ -135,12 +135,14 @@ public class AlarmReceiver extends BroadcastReceiver
                     try {
 
 
+                        String model = Build.MODEL;
+
                         HttpClient httpClient = new DefaultHttpClient();
                         String host = "http://" + context.getString(R.string.host);
                         host += (":" + context.getString(R.string.port) + "/");
                         HttpGet request = new HttpGet(host + "status/" + userId);
                         JSONObject message = new JSONObject();
-                        String model = Build.MODEL;
+
 
 
                         int status = (new JSONObject(EntityUtils.toString((httpClient.execute(request)).getEntity()))).getInt("status");

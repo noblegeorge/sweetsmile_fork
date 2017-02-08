@@ -86,7 +86,6 @@
         </activity>
 
         <activity android:name=".IncomingCallActivity"
-            android:process=":Call"
 
             >
         </activity>
@@ -103,7 +102,6 @@
 
         <service
             android:name=".MyService"
-            android:process=":Call"
 
             android:enabled="true" />
 

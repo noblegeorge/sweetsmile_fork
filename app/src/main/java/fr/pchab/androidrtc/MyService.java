@@ -250,6 +250,8 @@ public class MyService extends Service {
                 e.printStackTrace();
             }
 
+            socketHandler.setSocket(client);
+
                 Intent intent = new Intent(getApplicationContext(), IncomingCallActivity.class);
                 //intent.setComponent(new ComponentName(getPackageName(), IncomingCallActivity.class.getName()));
                 intent.setAction(Intent.ACTION_MAIN);
@@ -258,6 +260,7 @@ public class MyService extends Service {
                 intent.putExtra("USER_ID", userId);
                 intent.putExtra("CALLER_NAME", name);
                 intent.putExtra("USER_NAME", userName);
+
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 

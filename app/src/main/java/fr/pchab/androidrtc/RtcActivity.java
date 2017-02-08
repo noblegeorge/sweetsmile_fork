@@ -215,7 +215,8 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
        // Point displaySize = new Point();
         PeerConnectionParameters params = new PeerConnectionParameters(
                 false, false, 0, 0, 0, 0, null, false, 1, AUDIO_CODEC_OPUS, true);
-        client = new WebRtcClient(this, mSocketAddress, params, this.myId, MyService.client);
+        client2 = socketHandler.getSocket();
+        client = new WebRtcClient(this, mSocketAddress, params, this.myId, client2 );
     }
 
     /**
@@ -294,7 +295,7 @@ public class RtcActivity extends Activity implements WebRtcClient.RtcListener {
                 JSONObject message = new JSONObject();
               //  message.put("myId", myId);
                 message.put("callerId", number);
-                MyService.client.emit("ejectcall", message);
+                client.client.emit("ejectcall", message);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -696,7 +697,7 @@ public void closeActivity() {
             client2.disconnect();
         }*/
             client2 = null;
-            startService(new Intent(this, MyService.class));
+      //      startService(new Intent(this, MyService.class));
             // client.factory.dispose();
             //  client.audioSource.dispose();
 
